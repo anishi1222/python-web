@@ -40,8 +40,11 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
-          acrName: "ghatest999"
-          containerAppName: "logicojp-gha-test"
-          resourceGroup: "GHA-test-target"
+          acrName: ghatest999
+          containerAppName: logicojp-gha-test
+          containerAppEnvironment: gha-test-target-env
+          resourceGroup: GHA-test-target
           imageToBuild: ghatest999.azurecr.io/python-web:${{ github.run_id }}.${{ github.run_attempt }}
           targetPort: 5000
+          runtimeStack: 'Python:3.12'
+          
