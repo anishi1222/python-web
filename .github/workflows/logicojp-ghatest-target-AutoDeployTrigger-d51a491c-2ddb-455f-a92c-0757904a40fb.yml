@@ -1,0 +1,48 @@
+name: Trigger auto deployment for logicojp-ghatest-target
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/logicojp-ghatest-target-AutoDeployTrigger-d51a491c-2ddb-455f-a92c-0757904a40fb.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.LOGICOJPGHATESTTARGET_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.LOGICOJPGHATESTTARGET_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.LOGICOJPGHATESTTARGET_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          registryUrl: ghatest999.azurecr.io
+          registryUsername: ${{ secrets.LOGICOJPGHATESTTARGET_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.LOGICOJPGHATESTTARGET_REGISTRY_PASSWORD }}
+          containerAppName: logicojp-ghatest-target
+          resourceGroup: GHA-test-target
+          imageToBuild: ghatest999.azurecr.io/logicojp-ghatest-target:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
